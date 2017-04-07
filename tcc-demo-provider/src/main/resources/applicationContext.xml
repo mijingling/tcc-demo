@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xmlns:mvc="http://www.springframework.org/schema/mvc"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://www.springframework.org/schema/mvc http://www.springframework.org/schema/mvc/spring-mvc-4.2.xsd
+		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+	
+	<!-- 扫描注解 -->
+	<context:component-scan base-package="com.tcc.demo"/>
+	<aop:aspectj-autoproxy proxy-target-class="true"/>
+    
+	<!-- dubbo配置(优先级高于properties) -->
+	<dubbo:annotation package="com.tcc.demo" />
+	<dubbo:protocol name="dubbo"/>
+	
+	<!-- 分布式配置dubbo-provider参数 -->
+    <bean id="dubboProviderProperties" class="com.tcc.demo.conf.DubboProviderProperties">
+        <property name="appName" value="tcc-provider"></property>
+        <property name="address" value="10.0.1.90:2181"></property>
+        <property name="restPort" value="20761"></property>
+        <property name="protocol" value="zookeeper"></property>
+        <property name="dubboPort" value="9090"></property>
+        <property name="restServer" value="netty"></property>
+    </bean>
+    <!-- tcc存入jedis -->
+	<bean id="transactionRepository" class="org.mengyun.tcctransaction.repository.RedisTransactionRepository">
+		<property name="keyPrefix" value="tcc_ut_"/>
+		<property name="jedisPool" ref="jedisPool"/>
+	</bean>
+	<bean id="jedisPoolConfig" class="redis.clients.jedis.JedisPoolConfig">
+		<property name="maxTotal" value="1000"/>
+		<property name="maxWaitMillis" value="1000"/>
+	</bean>
+	<bean id="jedisPool" class="redis.clients.jedis.JedisPool">
+		<constructor-arg index="0" ref="jedisPoolConfig"/>
+		<constructor-arg index="1" value="10.0.1.203"/>
+		<constructor-arg index="2" value="6379" type="int"/>
+		<constructor-arg index="3" value="1000" type="int"/>
+		<constructor-arg index="4" value="test.Qian360#com"/>
+		<constructor-arg index="5" value="11"/>
+	</bean>
+	<!-- 设置恢复策略(可选） -->
+	<bean class="org.mengyun.tcctransaction.spring.recover.DefaultRecoverConfig">
+	    <property name="maxRetryCount" value="5"/>
+	    <property name="recoverDuration" value="120"/>
+	    <property name="cronExpression" value="0 */1 * * * ?"/>
+	</bean>
+	<!-- tcc存入mysql -->
+	<!-- <bean id="transactionRepository" class="org.mengyun.tcctransaction.spring.repository.SpringJdbcTransactionRepository">
+	    <property name="dataSource" ref="dataSource"/>
+	    <property name="domain" value="RECORD"/>
+    	<property name="tbSuffix" value="_REC"/>
+	</bean>
+	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource" destroy-method="close">
+	    <property name="driverClassName" value="com.mysql.jdbc.Driver"/>
+	    <property name="url" value="jdbc:mysql://10.0.1.90:3306/tcc-db?useUnicode=true&amp;characterEncoding=UTF-8"/>
+	    <property name="username" value="root"/>
+	    <property name="password" value="qian360"/>
+	</bean> -->
+
+</beans>

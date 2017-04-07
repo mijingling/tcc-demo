@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	   xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	   xmlns:aop="http://www.springframework.org/schema/aop"
+	   xmlns:context="http://www.springframework.org/schema/context"
+	   xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-4.2.xsd
+		http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-4.2.xsd
+		http://www.springframework.org/schema/context http://www.springframework.org/schema/context/spring-context-4.2.xsd
+		http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd">
+	
+	<!-- 扫描注解 -->
+	<context:component-scan base-package="com.tcc.demo"/>
+	<!-- dubbo配置(优先级高于properties) -->
+	<dubbo:annotation package="com.tcc.demo" />
+	
+	<!-- 分布式配置dubbo参数 -->
+    <bean id="dubboConsumerProperties" class="com.tcc.demo.conf.DubboConsumerProperties">
+        <property name="appName" value="tcc-consumer"></property>
+        <property name="address" value="10.0.1.90:2181"></property>
+        <property name="protocol" value="zookeeper"></property>
+    </bean>
+</beans>
